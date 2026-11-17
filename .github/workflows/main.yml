@@ -1,0 +1,37 @@
+name: Render Remotion Video
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: # هذا السطر يسمح لك بتشغيل الرندر يدوياً بضغطة زر
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 سحب الكود من المستودع
+        uses: actions/checkout@v4
+
+      - name: ⚙️ تثبيت Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 📦 تثبيت المكتبات (Dependencies)
+        run: npm install
+
+      - name: 🎬 تثبيت FFmpeg (مطلوب لـ Remotion)
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: 🚀 رندر الفيديو
+        # ⚠️ ملاحظة: تأكد أن اسم التركيبة (intro) هو ما تريده، ومسار الملف صحيح
+        run: npx remotion render src/index.ts intro out/video.mp4 --concurrency=4
+
+      - name: 💾 حفظ الفيديو كملف قابل للتنزيل (Artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-final
+          path: out/video.mp4
+          retention-days: 5 # سيحتفظ بالفيديو لمدة 5 أيام

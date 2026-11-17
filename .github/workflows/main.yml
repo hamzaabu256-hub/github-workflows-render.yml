@@ -3,7 +3,7 @@ name: Render Remotion Video
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: # هذا السطر يسمح لك بتشغيل الرندر يدوياً بضغطة زر
+  workflow_dispatch: # يسمح لك بتشغيل الرندر يدوياً
 
 jobs:
   render:
@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          # تمت إزالة cache: 'npm' لتجنب فشل التثبيت
 
       - name: 📦 تثبيت المكتبات (Dependencies)
         run: npm install
@@ -26,12 +26,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: 🚀 رندر الفيديو
-        # ⚠️ ملاحظة: تأكد أن اسم التركيبة (intro) هو ما تريده، ومسار الملف صحيح
-        run: npx remotion render src/index.ts intro out/video.mp4 --concurrency=4
+        # --gl=swangle ضروري لخوادم GitHub التي لا تحتوي على كروت شاشة
+        # --overwrite لتجاوز أي ملفات قديمة
+        run: npx remotion render src/index.ts intro out/video.mp4 --gl=swangle --concurrency=4 --overwrite
 
       - name: 💾 حفظ الفيديو كملف قابل للتنزيل (Artifact)
         uses: actions/upload-artifact@v4
         with:
           name: video-final
           path: out/video.mp4
-          retention-days: 5 # سيحتفظ بالفيديو لمدة 5 أيام
+          retention-days: 5
